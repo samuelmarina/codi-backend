@@ -4,7 +4,9 @@ const pool = new Pool({
     host: 'queenie.db.elephantsql.com',
     database: 'xbzkedtk',
     password: 'ARobSc5VNehbcbXGHZ7gJIo-dKzyKDPq',
-    port: 3211,
+    port: 5432,
 });
 
-export default pool;
+module.exports = {
+    pool,
+}
