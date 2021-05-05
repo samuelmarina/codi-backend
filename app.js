@@ -15,7 +15,7 @@ app.use(bodyParser.urlencoded({
 app.use(express.static('public'));
 
 // ENDPOINT: LOGIN
-app.get("/login", login.loginUser)
+app.post("/login", login.loginUser)
 
 app.listen(port, () => {
     console.log("Server started on port 3000");
