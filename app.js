@@ -1,9 +1,11 @@
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const express = require('express');
+var cors = require('cors');
 
 const app = express();
 const port = process.env.PORT || 3000;
+app.use(cors);
 
 const login = require('./queries/login/login');
 
