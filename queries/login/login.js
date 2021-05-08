@@ -1,7 +1,7 @@
 const pool = require("../../bd/pg");
 
 /**
- * Loquear a un usuario
+ * Loguear a un usuario
  * @param {JSON} request HTTP request
  * @param {JSON} response HTTP response
  */
