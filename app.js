@@ -5,19 +5,17 @@ var cors = require('cors');
 
 const app = express();
 const port = process.env.PORT || 3000;
-app.use(cors);
+app.use(cors());
 
 const login = require('./queries/login/login');
 
 app.set('view engine', 'ejs');
 
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
+app.use(bodyParser.json());
 app.use(express.static('public'));
 
 // ENDPOINT: LOGIN
-app.post("/login", login.loginUser)
+app.post("/login", login.loginUser);
 
 app.listen(port, () => {
     console.log("Server started on port 3000");
