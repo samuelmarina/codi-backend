@@ -17,6 +17,13 @@ app.use(express.static('public'));
 // ENDPOINT: LOGIN
 app.post("/login", login.loginUser);
 
+// ENDPOINT: PROBLEMS
+app.route("/problems")
+    .get()
+    
+
+
+
 app.listen(port, () => {
     console.log("Server started on port 3000");
 })
