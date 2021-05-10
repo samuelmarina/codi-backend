@@ -17,13 +17,11 @@ app.use(bodyParser.json());
 app.use(express.static('public'));
 
 
-
 // ENDPOINT: LOGIN
 app.post("/login", login.loginUser);
 
 // ENDPOINT: PROBLEMS
-app.route("/problems").get('/',problems.readProblems)
-
+app.route("/problems").get(problems.readProblems)
 
 
 
