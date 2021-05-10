@@ -16,10 +16,6 @@ const readProblems=(request,response)=>{
 
 
 
-
-
 module.exports={
-    createProblem,
-    readProblems,
-    getProblemById
+    readProblems
 }
