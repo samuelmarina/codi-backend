@@ -8,19 +8,22 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 
 const login = require('./queries/login/login');
+const problems=require('./queries/login/login');
+
 
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
+
+
 // ENDPOINT: LOGIN
 app.post("/login", login.loginUser);
 
 // ENDPOINT: PROBLEMS
-app.route("/problems")
-    .get()
-    
+app.get('/problems/:id',problems.getProblemById)
+
 
 
 
