@@ -66,7 +66,7 @@ const getProblemById=(request,response)=>{
 //   })
 // }
 
-module.export={
+module.exports={
     createProblem,
     readProblems,
     getProblemById

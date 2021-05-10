@@ -8,7 +8,7 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 
 const login = require('./queries/login/login');
-const problems=require('./queries/login/login');
+const problems=require('./queries/problems/problems');
 
 
 app.set('view engine', 'ejs');
@@ -22,7 +22,7 @@ app.use(express.static('public'));
 app.post("/login", login.loginUser);
 
 // ENDPOINT: PROBLEMS
-app.get('/problems/:id',problems.getProblemById)
+app.route("/problems").get('/',problems.readProblems)
 
 
 
