@@ -22,7 +22,13 @@ app.use(express.static('public'));
 app.post("/login", login.loginUser);
 
 // ENDPOINT: PROBLEMS
-app.route("/problems").get(problems.getAllProblems)
+app.route("/problems")
+    .get(problems.getAllProblems);
+
+app.route("/problems/:difficulty")
+    .get(problems.getProblemsByDifficulty);
+
+
 
 
 
