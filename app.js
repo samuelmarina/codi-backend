@@ -27,9 +27,8 @@ app.route("/problems")
 app.route("/problems/:difficulty")
     .get(problems.getProblemsByDifficulty);
 
-
-
-
+app.route("/problems/id/:id")
+    .get(problems.getProblemById);
 
 app.listen(port, () => {
     console.log("Server started on port 3000");
