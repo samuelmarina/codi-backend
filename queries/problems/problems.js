@@ -8,9 +8,7 @@ const pool = require("../../bd/pg");
 const getAllProblems = (request, response) => {
     const query = 'SELECT * FROM "Problem" ORDER BY problem_id ASC';
     pool.query(query, (error, results) => {
-        if(error){
-            return error;
-        }
+        if(error) return response.send(error);
         response.status(200).json(results.rows)
     })
 }
@@ -29,7 +27,22 @@ const getProblemsByDifficulty = (request, response) => {
     })
 }
 
+/**
+ * Obtener un problema por ID
+ * @param {JSON} request HTTP request
+ * @param {JSON} response HTTP response
+ */
+const getProblemById = (request, response) => {
+    const id = request.params.id;
+    const query = 'SELECT * FROM "Problem" WHERE problem_id = $1';
+    pool.query(query, [id], (error, results) => {
+        if(error) return response.send(error);
+        response.status(200).json(results.rows);
+    })
+}
+
 module.exports = {
     getAllProblems,
-    getProblemsByDifficulty
+    getProblemsByDifficulty,
+    getProblemById
 }
