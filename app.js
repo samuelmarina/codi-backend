@@ -9,7 +9,7 @@ app.use(cors());
 
 const login = require('./queries/login/login');
 const problems=require('./queries/problems/problems');
-// const payments=require('./queries/payments/payments.js')
+const payments=require('./queries/payments/payments.js')
 
 
 app.set('view engine', 'ejs');
@@ -29,8 +29,9 @@ app.route("/problems/:difficulty")
     .get(problems.getProblemsByDifficulty);
 
 
-
-
+// ENDPOINT: PAYMENTS
+app.route("/payments")
+    .post(payments.createPayment);
 
 app.listen(port, () => {
     console.log("Server started on port 3000");
