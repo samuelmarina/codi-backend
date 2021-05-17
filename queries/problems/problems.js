@@ -6,7 +6,7 @@ const pool = require("../../bd/pg");
  * @param {JSON} response HTTP response
  */
 const getAllProblems = (request, response) => {
-    const query = 'SELECT * FROM "Problem" ORDER BY problem_id ASC';
+    const query = 'SELECT * FROM "Problem" WHERE active = TRUE ORDER BY problem_id ASC';
     pool.query(query, (error, results) => {
         if(error) return response.send(error);
         response.status(200).json(results.rows)
@@ -20,7 +20,7 @@ const getAllProblems = (request, response) => {
  */
 const getProblemsByDifficulty = (request, response) => {
     const difficulty = request.params.difficulty;
-    const query = 'SELECT * FROM "Problem" WHERE difficulty = $1';
+    const query = 'SELECT * FROM "Problem" WHERE difficulty = $1 AND active = TRUE';
     pool.query(query, [difficulty], (error, results) => {
         if(error) return response.send(error);
         response.status(200).json(results.rows);
