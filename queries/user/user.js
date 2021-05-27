@@ -13,7 +13,7 @@ const editUser = (request, response) => {
         if(err){
             return err;
         };
-        response.status(200).json("Nombre editado con éxito");
+        response.status(200).json("success");
     })
 }
 
