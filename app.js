@@ -11,6 +11,7 @@ const login = require('./queries/login/login');
 const problems=require('./queries/problems/problems');
 const payments=require('./queries/payments/payments.js')
 const statistics = require('./queries/statistics/statistics');
+const user = require('./queries/user/user');
 
 
 app.set('view engine', 'ejs');
@@ -40,6 +41,10 @@ app.route("/payments")
 // ENDPOINT: STATISTICS
 app.route("/statistics/:userId")
     .get(statistics.getUserStatistics);
+
+// ENDPOINT: USER
+app.route("/user")
+    .put(user.editUser);
 
 app.listen(port, () => {
     console.log("Server started on port 3000");
