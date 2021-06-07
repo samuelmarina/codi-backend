@@ -21,11 +21,30 @@ const getAllProblems = (request, response) => {
 const getProblemsByDifficulty = (request, response) => {
     const difficulty = request.params.difficulty;
     const userID = request.query.google_id;
-    const query = 'SELECT "Problem".problem_id, "Problem".description, "Problem".difficulty, "Problem".solution, "Problem".name, CASE WHEN "Problem".problem_id = submission.problem_id THEN True ELSE False END AS solved FROM "Problem" LEFT JOIN (SELECT "User-Problem".problem_id FROM "User-Problem" INNER JOIN "User" ON "User".user_id = "User-Problem".user_id WHERE "User".google_id = $1 AND "User-Problem".solved = True GROUP BY "User-Problem".problem_id) AS submission ON "Problem".problem_id = submission.problem_id WHERE "Problem".difficulty = $2 AND "Problem".active = True'
-    pool.query(query, [userID, difficulty], (error, results) => {
-        if(error) return response.send(error);
-        response.status(200).json(results.rows);
-    })
+    if(difficulty === 'all'){
+        const query = 'SELECT "Problem".problem_id, "Problem".description, "Problem".difficulty, "Problem".solution, \
+            "Problem".name, CASE WHEN "Problem".problem_id = submission.problem_id THEN True ELSE False END AS solved \
+            FROM "Problem" LEFT JOIN (SELECT "User-Problem".problem_id FROM "User-Problem" \
+            INNER JOIN "User" ON "User".user_id = "User-Problem".user_id WHERE "User".google_id = $1 AND "User-Problem".solved = True \
+            GROUP BY "User-Problem".problem_id) AS submission ON "Problem".problem_id = submission.problem_id \
+            WHERE "Problem".active = True';
+            pool.query(query, [userID], (error, results) => {
+                if(error) return response.send(error);
+                response.status(200).json(results.rows);
+            });
+    }
+    else{
+        const query = 'SELECT "Problem".problem_id, "Problem".description, "Problem".difficulty, "Problem".solution, \
+            "Problem".name, CASE WHEN "Problem".problem_id = submission.problem_id THEN True ELSE False END AS solved \
+            FROM "Problem" LEFT JOIN (SELECT "User-Problem".problem_id FROM "User-Problem" \
+            INNER JOIN "User" ON "User".user_id = "User-Problem".user_id WHERE "User".google_id = $1 AND "User-Problem".solved = True \
+            GROUP BY "User-Problem".problem_id) AS submission ON "Problem".problem_id = submission.problem_id \
+            WHERE "Problem".difficulty = $2 AND "Problem".active = True';
+            pool.query(query, [userID, difficulty], (error, results) => {
+                if(error) return response.send(error);
+                response.status(200).json(results.rows);
+            });
+    }
 }
 
 /**
