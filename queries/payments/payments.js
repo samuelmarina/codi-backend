@@ -7,12 +7,12 @@ const createPayment = async (request, response) => {
     const userID = await getUserId(client, response, payment.user_id);
     const query = "INSERT INTO \"Payment\"(date, amount, pm_id, user_id, active, sub_type) VALUES ($1, $2, $3, $4 , TRUE, $5)";
     
-    pool.query(query, [payment.date, payment.amount, payment.pm_id, userID, payment.sub_type], 
-        (err, res) => {
-            if(err) return err;
-            return response.status(201).send(res.rows);
-        }
-    );
+    try {
+        const results = (await client).query(query, [payment.date, payment.amount, payment.pm_id, userID, payment.sub_type]);
+        return response.status(201).send(results.rows);
+    } catch (error) {
+        return response.send("Error");
+    }
 }
 
 /**
