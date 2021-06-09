@@ -1,15 +1,36 @@
 const pool = require("../../bd/pg");
 
-const createPayment = (request, response) => {
+const createPayment = async (request, response) => {
     const payment = request.body.payment;
+    const client = pool.connect();
+
+    const userID = await getUserId(client, response, payment.user_id);
     const query = "INSERT INTO \"Payment\"(date, amount, pm_id, user_id, active, sub_type) VALUES ($1, $2, $3, $4 , TRUE, $5)";
     
-    pool.query(query, [payment.date, payment.amount, payment.pm_id, payment.user_id, payment.sub_type], 
+    pool.query(query, [payment.date, payment.amount, payment.pm_id, userID, payment.sub_type], 
         (err, res) => {
             if(err) return err;
             return response.status(201).send(res.rows);
         }
     );
+}
+
+/**
+ * Obtener el user id a partir del google id
+ * @param {Promise} client objeto de postgresql
+ * @param {Hanlder} response manejo del response 
+ * @param {String} googleId id de google del usuario
+ * @returns String id del usuario en la base de datos
+ */
+const getUserId = async (client, response, googleId) => {
+    const query = 'SELECT user_id FROM "User" WHERE google_id = \'' + googleId + '\'';
+    try {
+        const results = await (await client).query(query);
+        return results.rows[0].user_id;
+    } catch (error) {
+        console.log(error)
+        return response.send("Error");
+    }
 }
 
 module.exports = {
