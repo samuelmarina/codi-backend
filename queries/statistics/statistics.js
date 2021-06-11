@@ -27,8 +27,32 @@ const getUserStatistics = async (request, response) => {
     
     const totalLanguages = await getTotalLanguages(client, response, userId);
     data['languages'] = totalLanguages;
+
+    const monthlySubmissions = await getSubmissionsPerMonth(client, response, userId);
+    data['monthlySubmissions'] = monthlySubmissions;
     
     response.status(200).send(data);
+}
+
+/**
+ * Obtener un arreglo con la cantidad de submissions
+ * de un usuario agrupados por fecha del año actual
+ * @param {Promise} client objeto de postgresql
+ * @param {Hanlder} response manejo del response 
+ * @param {String} userID ID del usuario
+ * @returns Arreglo de objeto con fecha y count
+ */
+const getSubmissionsPerMonth = async (client, response, userID) => {
+    const query = 'SELECT DATE_TRUNC(\'month\', date) AS month, COUNT(id) AS count \
+    FROM "User-Problem" WHERE DATE_PART(\'year\', date) = DATE_PART(\'year\', CURRENT_DATE) AND \
+    user_id = (SELECT user_id FROM "User" WHERE google_id = $1) GROUP BY DATE_TRUNC(\'month\', date)';
+
+    try{
+        const results = await (await client).query(query, [userID]);
+        return results.rows;
+    } catch(error) {
+        return response.send("Error");
+    }
 }
 
 /**
