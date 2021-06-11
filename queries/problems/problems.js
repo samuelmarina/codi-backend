@@ -5,16 +5,18 @@ const pool = require("../../bd/pg");
  * @param {JSON} request HTTP request
  * @param {JSON} response HTTP response
  */
-const getAllProblems = (request, response) => {
+const getAllProblems = async (request, response) => {
     const query = 'SELECT * FROM "Problem" WHERE active = TRUE ORDER BY problem_id ASC';
-    pool.query(query, (error, results) => {
-        if(error){
-            pool.end();
-            return response.send(error);
-        }
-        pool.end();
-        response.status(200).json(results.rows)
-    })
+    const client = await pool.connect();
+
+    try {
+        const results = await client.query(query);
+        client.release();
+        return response.status(200).json(results.rows);
+    } catch (error) {
+        client.release();
+        return response.send(error);
+    }
 }
 
 /**
@@ -22,9 +24,10 @@ const getAllProblems = (request, response) => {
  * @param {JSON} request HTTP request
  * @param {JSON} response HTTP response
  */
-const getProblemsByDifficulty = (request, response) => {
+const getProblemsByDifficulty = async (request, response) => {
     const difficulty = request.params.difficulty;
     const userID = request.query.google_id;
+    const client = await pool.connect();
     if(difficulty === 'all'){
         const query = 'SELECT "Problem".problem_id, "Problem".description, "Problem".difficulty, "Problem".solution, \
             "Problem".name, CASE WHEN "Problem".problem_id = submission.problem_id THEN True ELSE False END AS solved \
@@ -32,14 +35,15 @@ const getProblemsByDifficulty = (request, response) => {
             INNER JOIN "User" ON "User".user_id = "User-Problem".user_id WHERE "User".google_id = $1 AND "User-Problem".solved = True \
             GROUP BY "User-Problem".problem_id) AS submission ON "Problem".problem_id = submission.problem_id \
             WHERE "Problem".active = True';
-            pool.query(query, [userID], (error, results) => {
-                if(error) {
-                    pool.end();
-                    return response.send(error);
-                }
-                pool.end();
-                response.status(200).json(results.rows);
-            });
+
+            try {
+                const results = await client.query(query, [userID]);
+                client.release();
+                return response.status(200).json(results.rows);
+            } catch (error) {
+                client.release();
+                return response.send(error);
+            }
     }
     else{
         const query = 'SELECT "Problem".problem_id, "Problem".description, "Problem".difficulty, "Problem".solution, \
@@ -48,14 +52,15 @@ const getProblemsByDifficulty = (request, response) => {
             INNER JOIN "User" ON "User".user_id = "User-Problem".user_id WHERE "User".google_id = $1 AND "User-Problem".solved = True \
             GROUP BY "User-Problem".problem_id) AS submission ON "Problem".problem_id = submission.problem_id \
             WHERE "Problem".difficulty = $2 AND "Problem".active = True';
-            pool.query(query, [userID, difficulty], (error, results) => {
-                if(error) {
-                    pool.end();
-                    return response.send(error);
-                }
-                pool.end();
-                response.status(200).json(results.rows);
-            });
+
+            try {
+                const results = await client.query(query, [userID, difficulty]);
+                client.release();
+                return response.status(200).json(results.rows);
+            } catch (error) {
+                client.release();
+                return response.send(error);
+            }
     }
 }
 
