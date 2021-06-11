@@ -45,7 +45,7 @@ const getUserStatistics = async (request, response) => {
 const getSubmissionsPerMonth = async (client, response, userID) => {
     const query = 'SELECT DATE_TRUNC(\'month\', date) AS month, COUNT(id) AS count \
     FROM "User-Problem" WHERE DATE_PART(\'year\', date) = DATE_PART(\'year\', CURRENT_DATE) AND \
-    user_id = (SELECT user_id FROM "User" WHERE google_id = $1) GROUP BY DATE_TRUNC(\'month\', date)';
+    user_id = (SELECT user_id FROM "User" WHERE google_id = $1) AND active = TRUE GROUP BY DATE_TRUNC(\'month\', date)';
 
     try{
         const results = await (await client).query(query, [userID]);
