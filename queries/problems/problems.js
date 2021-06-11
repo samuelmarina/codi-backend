@@ -30,6 +30,7 @@ const getProblemsByDifficulty = (request, response) => {
             WHERE "Problem".active = True';
             pool.query(query, [userID], (error, results) => {
                 if(error) return response.send(error);
+                pool.end();
                 response.status(200).json(results.rows);
             });
     }
@@ -42,6 +43,7 @@ const getProblemsByDifficulty = (request, response) => {
             WHERE "Problem".difficulty = $2 AND "Problem".active = True';
             pool.query(query, [userID, difficulty], (error, results) => {
                 if(error) return response.send(error);
+                pool.end();
                 response.status(200).json(results.rows);
             });
     }
