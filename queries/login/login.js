@@ -18,8 +18,10 @@ const loginUser = async (request, response) => {
             return response.status(201).send(newUser);
         }
         client.release();
+        pool.end();
         return response.status(200).json(results.rows);
     } catch (error) {
+        pool.end();
         client.release();
         response.send(error);
     }
