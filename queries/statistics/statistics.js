@@ -30,6 +30,8 @@ const getUserStatistics = async (request, response) => {
 
     const monthlySubmissions = await getSubmissionsPerMonth(client, response, userId);
     data['monthlySubmissions'] = monthlySubmissions;
+
+    (await client).release()
     
     response.status(200).send(data);
 }
