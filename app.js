@@ -9,12 +9,6 @@ app.use(cors({
     origin:['http://localhost:3000'],
     credentials:true
 }));
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', true);
-    res.header('Access-Control-Allow-Credentials', 'Content-Type');
-    next();
-})
 
 const login = require('./queries/login/login');
 const problems=require('./queries/problems/problems');
@@ -29,31 +23,31 @@ app.use(bodyParser.json());
 app.use(express.static('public'));
 
 
-// ENDPOINT: LOGIN
-app.post("/login", login.loginUser);
+// // ENDPOINT: LOGIN
+// app.post("/login", login.loginUser);
 
-// ENDPOINT: PROBLEMS
-app.route("/problems")
-    .get(problems.getAllProblems);
+// // ENDPOINT: PROBLEMS
+// app.route("/problems")
+//     .get(problems.getAllProblems);
 
-app.route("/problems/:difficulty")
-    .get(problems.getProblemsByDifficulty);
+// app.route("/problems/:difficulty")
+//     .get(problems.getProblemsByDifficulty);
 
-app.route("/problems/id/:id")
-    .get(problems.getProblemById);
+// app.route("/problems/id/:id")
+//     .get(problems.getProblemById);
     
 
-// ENDPOINT: PAYMENTS
-app.route("/payments")
-    .post(payments.createPayment);
+// // ENDPOINT: PAYMENTS
+// app.route("/payments")
+//     .post(payments.createPayment);
 
-// ENDPOINT: STATISTICS
-app.route("/statistics/:userId")
-    .get(statistics.getUserStatistics);
+// // ENDPOINT: STATISTICS
+// app.route("/statistics/:userId")
+//     .get(statistics.getUserStatistics);
 
-// ENDPOINT: USER
-app.route("/user")
-    .put(user.editUser);
+// // ENDPOINT: USER
+// app.route("/user")
+//     .put(user.editUser);
 
 app.listen(port, () => {
     console.log("Server started on port 3000");

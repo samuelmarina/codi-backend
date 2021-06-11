@@ -30,6 +30,13 @@ const getUserStatistics = async (request, response) => {
 
     const monthlySubmissions = await getSubmissionsPerMonth(client, response, userId);
     data['monthlySubmissions'] = monthlySubmissions;
+
+    // client.end(err => {
+    //     console.log('Client has disconnected');
+    //     if(err) {
+    //         console.log('Error', err.stack);
+    //     }
+    // })
     
     response.status(200).send(data);
 }

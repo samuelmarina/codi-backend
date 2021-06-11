@@ -18,7 +18,8 @@ const loginUser = (request, response) => {
             return response.status(201).send(newUser);
         }
         response.status(200).json(res.rows);
-    })
+    });
+    pool.end();
 }
 
 /**
