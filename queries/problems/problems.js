@@ -8,7 +8,11 @@ const pool = require("../../bd/pg");
 const getAllProblems = (request, response) => {
     const query = 'SELECT * FROM "Problem" WHERE active = TRUE ORDER BY problem_id ASC';
     pool.query(query, (error, results) => {
-        if(error) return response.send(error);
+        if(error){
+            pool.end();
+            return response.send(error);
+        }
+        pool.end();
         response.status(200).json(results.rows)
     })
 }
@@ -29,7 +33,11 @@ const getProblemsByDifficulty = (request, response) => {
             GROUP BY "User-Problem".problem_id) AS submission ON "Problem".problem_id = submission.problem_id \
             WHERE "Problem".active = True';
             pool.query(query, [userID], (error, results) => {
-                if(error) return response.send(error);
+                if(error) {
+                    pool.end();
+                    return response.send(error);
+                }
+                pool.end();
                 response.status(200).json(results.rows);
             });
     }
@@ -41,7 +49,11 @@ const getProblemsByDifficulty = (request, response) => {
             GROUP BY "User-Problem".problem_id) AS submission ON "Problem".problem_id = submission.problem_id \
             WHERE "Problem".difficulty = $2 AND "Problem".active = True';
             pool.query(query, [userID, difficulty], (error, results) => {
-                if(error) return response.send(error);
+                if(error) {
+                    pool.end();
+                    return response.send(error);
+                }
+                pool.end();
                 response.status(200).json(results.rows);
             });
     }
@@ -56,7 +68,11 @@ const getProblemById = (request, response) => {
     const id = request.params.id;
     const query = 'SELECT * FROM "Problem" WHERE problem_id = $1';
     pool.query(query, [id], (error, results) => {
-        if(error) return response.send(error);
+        if(error) {
+            pool.end();
+            return response.send(error);
+        }
+        pool.end();
         response.status(200).json(results.rows);
     })
 }

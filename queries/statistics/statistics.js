@@ -9,7 +9,7 @@ const math = require("../../helpers/math/math");
 const getUserStatistics = async (request, response) => {
     const userId = request.params.userId;
     const data = {};
-    const client = pool.connect();
+    const client = await pool.connect();
     
     const totalProblems = await getTotalProblems(client, response);
     const totalProblemsByDifficulty = await getTotalProblemsSolved(client, response, userId);
@@ -30,6 +30,8 @@ const getUserStatistics = async (request, response) => {
 
     const monthlySubmissions = await getSubmissionsPerMonth(client, response, userId);
     data['monthlySubmissions'] = monthlySubmissions;
+
+    client.release();
     
     response.status(200).send(data);
 }
@@ -48,7 +50,7 @@ const getSubmissionsPerMonth = async (client, response, userID) => {
     user_id = (SELECT user_id FROM "User" WHERE google_id = $1) AND active = TRUE GROUP BY DATE_TRUNC(\'month\', date)';
 
     try{
-        const results = await (await client).query(query, [userID]);
+        const results = await client.query(query, [userID]);
         return results.rows;
     } catch(error) {
         return response.send("Error");
@@ -115,9 +117,8 @@ const getProblemsObject = (totalProblems, totalSolved) => {
  */
 const getTotalProblems = async (client, response) => {
     const query = 'SELECT COUNT(*), difficulty FROM "Problem" WHERE active = TRUE GROUP BY difficulty';
-
     try{
-        const results = await (await client).query(query);
+        const results = await client.query(query);
         return results.rows;
     } catch(error) {
         return response.send("Error");
@@ -136,7 +137,7 @@ const getTotalProblemsSolved = async (client, response, userID) => {
     const query = 'SELECT COUNT(*), difficulty FROM (SELECT "Problem".difficulty FROM "User-Problem" INNER JOIN "Problem" ON "User-Problem".problem_id = "Problem".problem_id WHERE user_id = (SELECT user_id FROM "User" WHERE google_id = $1) AND solved = TRUE GROUP BY "Problem".problem_id) AS problems GROUP BY problems.difficulty';
 
     try{
-        const results = await (await client).query(query, [userID]);
+        const results = await client.query(query, [userID]);
         return results.rows;
     } catch(error) {
         return response.send("Error");
@@ -156,9 +157,10 @@ const getTotalProblemsBySolved = async (client, response, userID) => {
     const query = 'SELECT COUNT(id), solved FROM "User-Problem" WHERE user_id = (SELECT user_id FROM "User" WHERE google_id = $1) GROUP BY solved';
     
     try{
-        const results = await (await client).query(query, [userID]);
+        const results = await client.query(query, [userID]);
         return results.rows;
     } catch(error) {
+        
         return response.send("Error");
     }
 }
@@ -174,9 +176,11 @@ const getTotalProblemsBySolved = async (client, response, userID) => {
 const getTotalLanguages = async (client, response, userID) => {
     const query = 'SELECT COUNT(id), language FROM "User-Problem" WHERE user_id = (SELECT user_id FROM "User" WHERE google_id = $1) GROUP BY language';
     try{
-        const results = await (await client).query(query, [userID]);
+        const results = await client.query(query, [userID]);
+        
         return results.rows;
     } catch(error) {
+        
         return response.send("Error");
     }
 }

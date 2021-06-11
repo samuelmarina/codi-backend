@@ -11,12 +11,14 @@ const loginUser = (request, response) => {
     pool.query(query, [user.google_id],
     (err, res) => {
         if(err){
+            pool.end();
             return err;
         };
         if(res.rows.length === 0){
             const newUser = createUser(user);
             return response.status(201).send(newUser);
         }
+        pool.end();
         response.status(200).json(res.rows);
     })
 }
@@ -28,7 +30,11 @@ const loginUser = (request, response) => {
 const createUser = (user) => {
     const query = "INSERT INTO \"User\"(google_id, name, pic_url, premium, is_admin, active) VALUES ($1, $2, $3, false, false, true)";
     pool.query(query, [user.google_id, user.name, user.pic_url], (err, res) => {
-        if(err) return err;
+        if(err) {
+            pool.end();
+            return err;
+        }
+        pool.end();
         return res.rows;
     });
 }

@@ -2,15 +2,17 @@ const pool = require("../../bd/pg");
 
 const createPayment = async (request, response) => {
     const payment = request.body.payment;
-    const client = pool.connect();
+    const client = await pool.connect();
 
     const userID = await getUserId(client, response, payment.user_id);
     const query = "INSERT INTO \"Payment\"(date, amount, pm_id, user_id, active, sub_type) VALUES ($1, $2, $3, $4 , TRUE, $5)";
     
     try {
-        const results = (await client).query(query, [payment.date, payment.amount, payment.pm_id, userID, payment.sub_type]);
+        const results = client.query(query, [payment.date, payment.amount, payment.pm_id, userID, payment.sub_type]);
+        client.release();
         return response.status(201).send(results.rows);
     } catch (error) {
+        client.release();
         return response.send("Error");
     }
 }
@@ -28,7 +30,6 @@ const getUserId = async (client, response, googleId) => {
         const results = await (await client).query(query);
         return results.rows[0].user_id;
     } catch (error) {
-        console.log(error)
         return response.send("Error");
     }
 }
