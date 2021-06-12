@@ -20,8 +20,16 @@ const getUserStatistics = async (request, response) => {
         data['submissions'] = 0;
     }
     else{
-        const notSolved = parseInt(totalProblemsSolved[0].count);
-        const solved = parseInt(totalProblemsSolved[1].count);
+        let notSolved = 0;
+        let solved = 0;
+        totalProblemsSolved.forEach(x => {
+            if(x.solved){
+                solved += parseInt(x.count);
+            }
+            else{
+                notSolved += parseInt(x.count);
+            }
+        })
         data['submissions'] = math.getPercentage(solved, solved+notSolved);
     }
     
