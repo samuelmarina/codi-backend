@@ -61,8 +61,95 @@ const getProblemById = (request, response) => {
     })
 }
 
+/**
+ * Crear un nuevo problema
+ * @param {JSON} request HTTP request
+ * @param {JSON} response HTTP response
+ */
+const postProblem = async (request, response) => {
+    const problem = request.body.problem;
+    const client = await pool.connect();
+
+    const problemId = await createNewProblem(client, response, problem);
+
+    problem.templates.forEach(async (temp) => {
+        await createNewTemplate(client, response, temp, problemId);
+    });
+
+    problem.testCases.forEach(async (tc) => {
+        await createNewTestCase(client, response, tc, problemId);
+    });
+
+    client.release();
+
+    response.status(201).send("Problem succesfully created");
+}
+
+/**
+ * Insertar un nuevo problema a la base
+ * de datos
+ * @param {Promise} client objeto de postgresql
+ * @param {Hanlder} response manejo del response 
+ * @param {JSON} data objeto con información del problema
+ * @returns String ID del problema creado
+ */
+const createNewProblem = async (client, response, data) => {
+    const query = 'INSERT INTO "Problem"(description, difficulty, solution, code, active, name) \
+    VALUES($1, $2, $3, $4, TRUE, $5) RETURNING problem_id';
+
+    try {
+        const results = await client.query(query, [data.description, data.difficulty, data.solution, data.codeSolution, data.name]);
+        return results.rows[0].problem_id;
+    } catch (error) {
+        return response.send("Error");
+    }
+}
+
+/**
+ * Insertar un nuevo template a la base
+ * de datos
+ * @param {Promise} client objeto de postgresql
+ * @param {Hanlder} response manejo del response 
+ * @param {JSON} template objeto tipo template
+ * @param {Number} problemID número ID del problema
+ * @returns String ID del template creado
+ */
+const createNewTemplate = async (client, response, template, problemID) => {
+    const query = 'INSERT INTO "Template"(language, code, problem_id) \
+    VALUES($1, $2, $3) RETURNING temp_id';
+
+    try {
+        const results = await client.query(query, [template.language, template.code, problemID]);
+        return results.rows[0].temp_id;
+    } catch (error) {
+        response.send("Error");
+    }
+} 
+
+/**
+ * Insertar un nuevo test case a la
+ * base de datos
+ * @param {Promise} client objeto de postgresql
+ * @param {Hanlder} response manejo del response 
+ * @param {JSON} testCase objeto tipo test case
+ * @param {Number} problemID número ID del problema
+ * @returns String ID del test case creado
+ */
+const createNewTestCase = async (client, response, testCase, problemID) => {
+    const query = 'INSERT INTO "Test_Case"(input, output, problem_id, active) \
+    VALUES($1, $2, $3, TRUE) RETURNING test_id';
+
+    try {
+        const results = await client.query(query, [testCase.input, testCase.output, problemID]);
+        return results.rows[0].test_id;
+    } catch (error) {
+        response.send("Error");
+    }
+}
+
 module.exports = {
     getAllProblems,
     getProblemsByDifficulty,
-    getProblemById
+    getProblemById,
+    postProblem
 }

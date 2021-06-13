@@ -26,7 +26,8 @@ app.post("/login", login.loginUser);
 
 // ENDPOINT: PROBLEMS
 app.route("/problems")
-    .get(problems.getAllProblems);
+    .get(problems.getAllProblems)
+    .post(problems.postProblem);
 
 app.route("/problems/:difficulty")
     .get(problems.getProblemsByDifficulty);
