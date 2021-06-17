@@ -82,7 +82,7 @@ const postProblem = async (request, response) => {
 
     client.release();
 
-    response.status(201).send("Problem succesfully created");
+    response.status(201).json("Problem succesfully created");
 }
 
 /**
@@ -98,7 +98,7 @@ const createNewProblem = async (client, response, data) => {
     VALUES($1, $2, $3, $4, TRUE, $5) RETURNING problem_id';
 
     try {
-        const results = await client.query(query, [data.description, data.difficulty, data.solution, data.codeSolution, data.name]);
+        const results = await client.query(query, [data.description, data.difficulty, data.solution, data.solutionCode, data.name]);
         return results.rows[0].problem_id;
     } catch (error) {
         return response.send("Error");
