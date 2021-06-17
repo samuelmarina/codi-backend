@@ -1,27 +1,21 @@
 //Payments Queries
 const pool = require("../../bd/pg");
 
+const createPayment = (request, response) => {
+  const { date, amount, pm_id, user_id, sub_type } = request.body.payment;
 
+  pool.query(
+    'INSERT INTO "Payment" (date, amount, pm_id, user_id, active, sub_type) VALUES ($1, $2,$3,$4,true,$5)',
+    [date, amount, pm_id, user_id, sub_type],
+    (error, results) => {
+      if (error) {
+        return error;
+      }
+      response.status(201).send(results.rows);
+    }
+  );
+};
 
-
-
-// const createPayment = (request, response) => {
-//     const payment = request.body.payment;
-//     const query = "INSERT INTO \"Payment\"(date,amount,pm_id,user_id,active,sub_type) VALUES ('2016-06-22 19:10:25-07',50,1,1,true,1)";
-   
-    
-//     pool.query(query, (err, res) => {
-//         if(err) return err;
-//         return response.status(201).send(res.rows);
-//     });
-
-    
-// }
-
-
-
-
-
-module.exports={
-    createPayment
-}
+module.exports = {
+  createPayment,
+};
