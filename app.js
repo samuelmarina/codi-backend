@@ -27,7 +27,10 @@ app.route("/problems").get(problems.getAllProblems).post(problems.postProblem);
 
 app.route("/problems/:difficulty").get(problems.getProblemsByDifficulty);
 
-app.route("/problems/id/:id").get(problems.getProblemById);
+app
+  .route("/problems/id/:id")
+  .get(problems.getProblemById)
+  .put(problems.updateProblemById);
 
 // ENDPOINT: PAYMENTS
 app.route("/payments").post(payments.createPayment);
