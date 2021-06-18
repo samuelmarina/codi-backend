@@ -62,9 +62,14 @@ const getProblemById = async (request, response) => {
     const testCases = await getProblemTestCases(client, response, id);
     problemInfo = {
         ...problem,
+        solutionCode: problem.solutioncode,
         templates: templates,
         testCases: testCases
     };
+
+    delete problemInfo.solutioncode;
+
+    client.release();
     
     response.status(200).json(problemInfo);
 }
