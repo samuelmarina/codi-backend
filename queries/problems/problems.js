@@ -101,7 +101,7 @@ const getProblemById2 = async (client, response, id) => {
  * @returns Array de objetos de tipo template
  */
 const getProblemTemplates = async (client, response, id) => {
-    const query = 'SELECT language, code FROM "Template" WHERE problem_id = $1';
+    const query = 'SELECT language, code, temp_id AS id FROM "Template" WHERE problem_id = $1';
     try {
         const results = await client.query(query, [id]);
         return results.rows;
@@ -119,7 +119,7 @@ const getProblemTemplates = async (client, response, id) => {
  * @returns Array de objetos de tipo test case
  */
 const getProblemTestCases = async (client, response, id) => {
-    const query = 'SELECT input, output FROM "Test_Case" WHERE problem_id = $1 AND active = TRUE';
+    const query = 'SELECT input, output, test_id AS id FROM "Test_Case" WHERE problem_id = $1 AND active = TRUE';
     try {
         const results = await client.query(query, [id]);
         return results.rows;
