@@ -52,13 +52,80 @@ const getProblemsByDifficulty = (request, response) => {
  * @param {JSON} request HTTP request
  * @param {JSON} response HTTP response
  */
-const getProblemById = (request, response) => {
+const getProblemById = async (request, response) => {
     const id = request.params.id;
-    const query = 'SELECT * FROM "Problem" WHERE problem_id = $1';
-    pool.query(query, [id], (error, results) => {
-        if(error) return response.send(error);
-        response.status(200).json(results.rows);
-    })
+    const client = await pool.connect();
+    let problemInfo = {};
+
+    const problem = await getProblemById2(client, response, id);
+    const templates = await getProblemTemplates(client, response, id);
+    const testCases = await getProblemTestCases(client, response, id);
+    problemInfo = {
+        ...problem,
+        solutionCode: problem.solutioncode,
+        templates: templates,
+        testCases: testCases
+    };
+
+    delete problemInfo.solutioncode;
+
+    client.release();
+    
+    response.status(200).json(problemInfo);
+}
+
+/**
+ * Obtener la info principal de un 
+ * problema por ID
+ * @param {Promise} client objeto de postgresql
+ * @param {Hanlder} response manejo del response 
+ * @param {Number} id id el problema
+ * @returns JSON objeto con info del problema
+ */
+const getProblemById2 = async (client, response, id) => {
+    const query = 'SELECT description, difficulty, solution, name, code AS solutionCode FROM "Problem" WHERE problem_id = $1';
+    try {
+        const results = await client.query(query, [id]);
+        return results.rows[0];
+    } catch (error) {
+        return response.send("Error");
+    }
+}
+
+/**
+ * Obtener todos los templates de 
+ * un problema por ID
+ * @param {Promise} client objeto de postgresql
+ * @param {Hanlder} response manejo del response 
+ * @param {Number} id id el problema
+ * @returns Array de objetos de tipo template
+ */
+const getProblemTemplates = async (client, response, id) => {
+    const query = 'SELECT language, code, temp_id AS id FROM "Template" WHERE problem_id = $1';
+    try {
+        const results = await client.query(query, [id]);
+        return results.rows;
+    } catch (error) {
+        return response.send("Error");
+    }
+}
+
+/**
+ * Obtener todos los test cases
+ * de un problema por ID
+ * @param {Promise} client objeto de postgresql
+ * @param {Hanlder} response manejo del response 
+ * @param {Number} id id el problema
+ * @returns Array de objetos de tipo test case
+ */
+const getProblemTestCases = async (client, response, id) => {
+    const query = 'SELECT input, output, test_id AS id FROM "Test_Case" WHERE problem_id = $1 AND active = TRUE';
+    try {
+        const results = await client.query(query, [id]);
+        return results.rows;
+    } catch (error) {
+        return response.send("Error");
+    }
 }
 
 /**
@@ -82,7 +149,7 @@ const postProblem = async (request, response) => {
 
     client.release();
 
-    response.status(201).send("Problem succesfully created");
+    response.status(201).json("Problem succesfully created");
 }
 
 /**
@@ -98,7 +165,7 @@ const createNewProblem = async (client, response, data) => {
     VALUES($1, $2, $3, $4, TRUE, $5) RETURNING problem_id';
 
     try {
-        const results = await client.query(query, [data.description, data.difficulty, data.solution, data.codeSolution, data.name]);
+        const results = await client.query(query, [data.description, data.difficulty, data.solution, data.solutionCode, data.name]);
         return results.rows[0].problem_id;
     } catch (error) {
         return response.send("Error");
