@@ -75,6 +75,56 @@ const getProblemById = async (request, response) => {
 }
 
 /**
+ * Obtener toda la info de un problema
+ * y los submissions de un usuario al mismo
+ * @param {JSON} request HTTP request
+ * @param {JSON} response HTTP response
+ */
+const getProblemsWithSubmissions = async (request, response) => {
+    const problemId = request.query.problem_id;
+    const userId = request.query.google_id;
+    const client = await pool.connect();
+
+    const problem = await getProblemById2(client, response, problemId);
+    const templates = await getProblemTemplates(client, response, problemId);
+    const submissions = await getUserSubmissions(client, response, problemId, userId);
+
+    client.release();
+
+    const problemInfo = {
+        ...problem,
+        solutionCode: problem.solutioncode,
+        templates,
+        submissions
+    }
+
+    delete problemInfo.solutioncode;
+
+    response.status(200).json(problemInfo);
+}
+
+/**
+ * Obtener todas las submissions de un 
+ * usuario en un problema
+ * @param {Promise} client objeto de postgresql
+ * @param {Hanlder} response manejo del response 
+ * @param {Number} problemId ID del problema
+ * @param {String} userId ID del usuario
+ * @returns Array de objetos de tipo submission
+ */
+const getUserSubmissions = async (client, response, problemId, userId) => {
+    const query = 'SELECT code, language, solved as status, date FROM "User-Problem" \
+    WHERE problem_id = $1 AND active = TRUE AND user_id = (SELECT user_id FROM "User" WHERE google_id = $2)';
+
+    try {
+        const results = await client.query(query, [problemId, userId]);
+        return results.rows;
+    } catch (error) {
+        return response.status(400).send(error);
+    }
+}
+
+/**
  * Obtener la info principal de un 
  * problema por ID
  * @param {Promise} client objeto de postgresql
@@ -218,5 +268,6 @@ module.exports = {
     getAllProblems,
     getProblemsByDifficulty,
     getProblemById,
-    postProblem
+    postProblem,
+    getProblemsWithSubmissions
 }
