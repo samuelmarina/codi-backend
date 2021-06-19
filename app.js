@@ -35,7 +35,7 @@ app.route("/problems/:difficulty")
 app.route("/problems/id/:id")
     .get(problems.getProblemById);
 
-app.route("/ideProblem/:problemId")
+app.route("/ideProblem/")
     .get(problems.getProblemsWithSubmissions);
     
 
