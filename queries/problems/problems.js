@@ -246,20 +246,20 @@ const createNewTestCase = async (client, response, testCase, problemID) => {
 const updateProblemById = async (request, response) => {
   const problem = request.body.problem;
   const client = await pool.connect();
-  const problemId = await updateProblem(client, response, problem);
+
+  await updateProblem(client, response, problem);
 
   problem.templates.forEach(async (tem) => {
-    await updateTemplate(client, response, tem, problemId);
+    await updateTemplate(client, response, tem, problem.problem_id);
   });
 
-  await getProblemTestCases(client, response, problemId);
   problem.testCases.forEach(async (tc) => {
-    await updateTestCase(client, response, tc, problemId);
+    await updateTestCase(client, response, tc, problem.problem_id);
   });
 
   client.release();
 
-  response.status(200).send(`Problem modified with ID: ${problemId}`);
+  response.status(200).send(`Problem modified with ID: ${problem.problem_id}`);
 };
 
 /**
@@ -267,7 +267,7 @@ const updateProblemById = async (request, response) => {
  * @param {Promise} client objeto de postgresql
  * @param {Handler} response manejo del response
  * @param {JSON} data objeto con información del problema
- * @returns {Number} id del problema
+ *
  */
 const updateProblem = async (client, response, data) => {
   const query =
@@ -283,7 +283,6 @@ const updateProblem = async (client, response, data) => {
       data.name,
       data.problem_id,
     ]);
-    return data.problem_id;
   } catch (error) {
     return response.send("Error");
   }
@@ -316,19 +315,23 @@ const updateTemplate = async (client, response, template, problemID) => {
  *
  */
 const updateTestCase = async (client, response, testCase, problemID) => {
-  const query =
-    'INSERT INTO "Test_Case"(test_id, input, output, active, problem_id) VALUES ($1, $2, $3, true, $4) \
-	ON CONFLICT (test_id) DO UPDATE SET input=$2, output=$3';
+  let query = "";
 
-  try {
-    await client.query(query, [
-      testCase.id,
-      testCase.input,
-      testCase.output,
-      problemID,
-    ]);
-  } catch (error) {
-    response.send("Error");
+  if (testCase.id) {
+    query = 'UPDATE "Test_Case" SET input = $1, output = $2 WHERE test_id = $3';
+    try {
+      await client.query(query, [testCase.input, testCase.output, testCase.id]);
+    } catch (error) {
+      response.send("Error");
+    }
+  } else {
+    query =
+      'INSERT INTO "Test_Case" (input,output,active,problem_id) VALUES ($1,$2,true,$3)';
+    try {
+      await client.query(query, [testCase.input, testCase.output, problemID]);
+    } catch (error) {
+      response.send("Error");
+    }
   }
 };
 
