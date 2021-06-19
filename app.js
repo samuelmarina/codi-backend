@@ -34,6 +34,9 @@ app.route("/problems/:difficulty")
 
 app.route("/problems/id/:id")
     .get(problems.getProblemById);
+
+app.route("/ideProblem/:problemId")
+    .get(problems.getProblemsWithSubmissions);
     
 
 // ENDPOINT: PAYMENTS
