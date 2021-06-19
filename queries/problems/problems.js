@@ -113,7 +113,8 @@ const getProblemsWithSubmissions = async (request, response) => {
  * @returns Array de objetos de tipo submission
  */
 const getUserSubmissions = async (client, response, problemId, userId) => {
-    const query = 'SELECT code, language, solved as status, date FROM "User-Problem" \
+    const query = 'SELECT code, language, solved,\
+    CASE WHEN solved = TRUE THEN \'Aprobado\' ELSE \'Desaprobado\' END as status, date FROM "User-Problem" \
     WHERE problem_id = $1 AND active = TRUE AND user_id = (SELECT user_id FROM "User" WHERE google_id = $2)';
 
     try {
