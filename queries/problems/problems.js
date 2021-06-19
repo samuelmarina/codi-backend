@@ -168,7 +168,7 @@ const createNewProblem = async (client, response, data) => {
         const results = await client.query(query, [data.description, data.difficulty, data.solution, data.solutionCode, data.name]);
         return results.rows[0].problem_id;
     } catch (error) {
-        return response.send("Error");
+        return response.status(400).send(error);
     }
 }
 
