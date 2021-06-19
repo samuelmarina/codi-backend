@@ -54,13 +54,84 @@ const getProblemsByDifficulty = (request, response) => {
  * @param {JSON} request HTTP request
  * @param {JSON} response HTTP response
  */
-const getProblemById = (request, response) => {
+
+const getProblemById = async (request, response) => {
   const id = request.params.id;
-  const query = 'SELECT * FROM "Problem" WHERE problem_id = $1';
-  pool.query(query, [id], (error, results) => {
-    if (error) return response.send(error);
-    response.status(200).json(results.rows);
-  });
+  const client = await pool.connect();
+  let problemInfo = {};
+
+  const problem = await getProblemById2(client, response, id);
+  const templates = await getProblemTemplates(client, response, id);
+  const testCases = await getProblemTestCases(client, response, id);
+  problemInfo = {
+    ...problem,
+    solutionCode: problem.solutioncode,
+    templates: templates,
+    testCases: testCases,
+  };
+
+  delete problemInfo.solutioncode;
+
+  client.release();
+
+  response.status(200).json(problemInfo);
+};
+
+/**
+ * Obtener la info principal de un
+ * problema por ID
+ * @param {Promise} client objeto de postgresql
+ * @param {Hanlder} response manejo del response
+ * @param {Number} id id el problema
+ * @returns JSON objeto con info del problema
+ */
+const getProblemById2 = async (client, response, id) => {
+  const query =
+    'SELECT description, difficulty, solution, name, code AS solutionCode FROM "Problem" WHERE problem_id = $1';
+  try {
+    const results = await client.query(query, [id]);
+    return results.rows[0];
+  } catch (error) {
+    return response.send("Error");
+  }
+};
+
+/**
+ * Obtener todos los templates de
+ * un problema por ID
+ * @param {Promise} client objeto de postgresql
+ * @param {Hanlder} response manejo del response
+ * @param {Number} id id el problema
+ * @returns Array de objetos de tipo template
+ */
+const getProblemTemplates = async (client, response, id) => {
+  const query =
+    'SELECT language, code, temp_id AS id FROM "Template" WHERE problem_id = $1';
+  try {
+    const results = await client.query(query, [id]);
+    return results.rows;
+  } catch (error) {
+    return response.send("Error");
+  }
+};
+
+/**
+ * Obtener todos los test cases
+ * de un problema por ID
+ * @param {Promise} client objeto de postgresql
+ * @param {Hanlder} response manejo del response
+ * @param {Number} id id el problema
+ * @returns Array de objetos de tipo test case
+ */
+const getProblemTestCases = async (client, response, id) => {
+  const query =
+    'SELECT input, output, test_id AS id FROM "Test_Case" WHERE problem_id = $1 AND active = TRUE';
+  try {
+    const results = await client.query(query, [id]);
+    return results.rows;
+  } catch (error) {
+    return response.send("Error");
+  }
 };
 
 /**
@@ -84,7 +155,7 @@ const postProblem = async (request, response) => {
 
   client.release();
 
-  response.status(201).send("Problem succesfully created");
+  response.status(201).json("Problem succesfully created");
 };
 
 /**
@@ -105,7 +176,7 @@ const createNewProblem = async (client, response, data) => {
       data.description,
       data.difficulty,
       data.solution,
-      data.codeSolution,
+      data.solutionCode,
       data.name,
     ]);
     return results.rows[0].problem_id;
@@ -167,22 +238,23 @@ const createNewTestCase = async (client, response, testCase, problemID) => {
 };
 
 /**
+ * Actualizar un problema y sus correspondientes tablas relaciones
+ * @param {JSON} request HTTP request
+ * @param {JSON} response HTTP response
  *
- * @param {*} request
- * @param {*} response
  */
 const updateProblemById = async (request, response) => {
   const problem = request.body.problem;
   const client = await pool.connect();
-
   const problemId = await updateProblem(client, response, problem);
 
-  problem.templates.forEach(async (tc) => {
-    await updateTemplate(client, response, tc, problemId);
+  problem.templates.forEach(async (tem) => {
+    await updateTemplate(client, response, tem, problemId);
   });
 
-  problem.testCases.forEach(async (temp) => {
-    await updateTestCase(client, response, temp, problemId);
+  await getProblemTestCases(client, response, problemId);
+  problem.testCases.forEach(async (tc) => {
+    await updateTestCase(client, response, tc, problemId);
   });
 
   client.release();
@@ -190,6 +262,13 @@ const updateProblemById = async (request, response) => {
   response.status(200).send(`Problem modified with ID: ${problemId}`);
 };
 
+/**
+ * actualizar el problema propuesto en la tabla problemas
+ * @param {Promise} client objeto de postgresql
+ * @param {Handler} response manejo del response
+ * @param {JSON} data objeto con información del problema
+ * @returns {Number} id del problema
+ */
 const updateProblem = async (client, response, data) => {
   const query =
     'UPDATE "Problem" SET description = $1, difficulty = $2, solution = $3, code = $4, name = $5 \
@@ -210,6 +289,13 @@ const updateProblem = async (client, response, data) => {
   }
 };
 
+/**
+ *
+ * @param {Promise} client objeto de postgresql
+ * @param {Handler} response manejo del response
+ * @param {JSON} template objeto tipo template
+ * @param {Number} problemID el id del problema
+ */
 const updateTemplate = async (client, response, template, problemID) => {
   const query =
     'UPDATE "Template" SET code = $1 WHERE language = $2 AND problem_id = $3';
@@ -221,27 +307,28 @@ const updateTemplate = async (client, response, template, problemID) => {
   }
 };
 
+/**
+ *
+ * @param {Promise} client objeto de postgresql
+ * @param {Handler} response manejo del response
+ * @param {JSON} testCase objeto de tipo Test_Case
+ * @param {Number} problemID
+ *
+ */
 const updateTestCase = async (client, response, testCase, problemID) => {
   const query =
-    'INSERT INTO "Test_Case" (input, output) VALUES ($1,$2) WHERE problem_id = $4 \
-    ON CONFLICT (id) DO UPDATE SET (input,output) VALUES ($1,$2) ';
-  // UPDATE "Test_Case" SET input = $1, output = $2 WHERE test_id = 2';
-
-  // INSERT INTO customers (name, email)
-  // VALUES('Microsoft','hotline@microsoft.com')
-  // ON CONFLICT (name)
-  // DO
-  // UPDATE SET email = EXCLUDED.email || ';' || customers.email;
+    'INSERT INTO "Test_Case"(test_id, input, output, active, problem_id) VALUES ($1, $2, $3, true, $4) \
+	ON CONFLICT (test_id) DO UPDATE SET input=$2, output=$3';
 
   try {
     await client.query(query, [
+      testCase.id,
       testCase.input,
       testCase.output,
-      testCase.id,
       problemID,
     ]);
   } catch (error) {
-    // response.send("Error");
+    response.send("Error");
   }
 };
 
