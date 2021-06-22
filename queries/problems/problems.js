@@ -253,8 +253,10 @@ const updateProblemById = async (request, response) => {
     await updateTemplate(client, response, tem, problem.problem_id);
   });
 
+  await deleteTestCases(client, response, problem.problem_id);
+
   problem.testCases.forEach(async (tc) => {
-    await updateTestCase(client, response, tc, problem.problem_id);
+    await createNewTestCase(client, response, tc, problem.problem_id);
   });
 
   client.release();
@@ -310,28 +312,16 @@ const updateTemplate = async (client, response, template, problemID) => {
  *
  * @param {Promise} client objeto de postgresql
  * @param {Handler} response manejo del response
- * @param {JSON} testCase objeto de tipo Test_Case
  * @param {Number} problemID
  *
  */
-const updateTestCase = async (client, response, testCase, problemID) => {
-  let query = "";
+const deleteTestCases = async (client, response, problemID) => {
+  const query = 'DELETE FROM "Test_Case" WHERE problem_id = $1 ';
 
-  if (testCase.id) {
-    query = 'UPDATE "Test_Case" SET input = $1, output = $2 WHERE test_id = $3';
-    try {
-      await client.query(query, [testCase.input, testCase.output, testCase.id]);
-    } catch (error) {
-      response.send("Error");
-    }
-  } else {
-    query =
-      'INSERT INTO "Test_Case" (input,output,active,problem_id) VALUES ($1,$2,true,$3)';
-    try {
-      await client.query(query, [testCase.input, testCase.output, problemID]);
-    } catch (error) {
-      response.send("Error");
-    }
+  try {
+    await client.query(query, [problemID]);
+  } catch (error) {
+    return response.send("Error");
   }
 };
 
