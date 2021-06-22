@@ -32,6 +32,8 @@ app
   .get(problems.getProblemById)
   .put(problems.updateProblemById);
 
+app.route("/ideProblem/").get(problems.getProblemsWithSubmissions);
+
 // ENDPOINT: PAYMENTS
 app.route("/payments").post(payments.createPayment);
 
