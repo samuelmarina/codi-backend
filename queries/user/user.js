@@ -11,7 +11,7 @@ const editUser = (request, response) => {
     pool.query(query, [user.name, user.google_id],
     (err, res) => {
         if(err){
-            return err;
+            return response.status(400).send(error);
         };
         response.status(200).json("success");
     })

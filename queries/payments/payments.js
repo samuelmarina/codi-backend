@@ -18,7 +18,7 @@ const createPayment = async (request, response) => {
     ]);
     return response.status(201).send(results.rows);
   } catch (error) {
-    return response.send("Error");
+    return response.status(400).send(error);
   }
 };
 
@@ -37,7 +37,7 @@ const getUserId = async (client, response, googleId) => {
     return results.rows[0].user_id;
   } catch (error) {
     console.log(error);
-    return response.send("Error");
+    return response.status(400).send(error);
   }
 };
 

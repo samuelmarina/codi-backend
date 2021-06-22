@@ -33,7 +33,7 @@ const createUser = async (client, response, user) => {
         const results = await client.query(query, [user.google_id, user.name, user.pic_url]);
         return results.rows;
     } catch (error) {
-        return response.send("Error");
+        return response.status(400).send(error);
     }
 }
 
@@ -44,7 +44,7 @@ const getUser = async (client, response, user) => {
         const results = await client.query(query, [user.google_id]);
         return results.rows;
     } catch (error) {
-        return response.send("Error");
+        return response.status(400).send(error);
     }
 }
 

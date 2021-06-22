@@ -61,7 +61,7 @@ const getSubmissionsPerMonth = async (client, response, userID) => {
         const results = await client.query(query, [userID]);
         return results.rows;
     } catch(error) {
-        return response.send("Error");
+        return response.status(400).send(error);
     }
 }
 
@@ -130,7 +130,7 @@ const getTotalProblems = async (client, response) => {
         const results = await client.query(query);
         return results.rows;
     } catch(error) {
-        return response.send("Error");
+        return response.status(400).send(error);
     }
 }
 
@@ -149,7 +149,7 @@ const getTotalProblemsSolved = async (client, response, userID) => {
         const results = await client.query(query, [userID]);
         return results.rows;
     } catch(error) {
-        return response.send("Error");
+        return response.status(400).send(error);
     }
 }
 
@@ -169,7 +169,7 @@ const getTotalProblemsBySolved = async (client, response, userID) => {
         const results = await client.query(query, [userID]);
         return results.rows;
     } catch(error) {
-        return response.send("Error");
+        return response.status(400).send(error);
     }
 }
 
@@ -187,7 +187,7 @@ const getTotalLanguages = async (client, response, userID) => {
         const results = await client.query(query, [userID]);
         return results.rows;
     } catch(error) {
-        return response.send("Error");
+        return response.status(400).send(error);
     }
 }
 

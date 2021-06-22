@@ -9,7 +9,7 @@ const getAllProblems = (request, response) => {
   const query =
     'SELECT * FROM "Problem" WHERE active = TRUE ORDER BY problem_id ASC';
   pool.query(query, (error, results) => {
-    if (error) return response.send(error);
+    if (error) return response.status(400).send(error);
     response.status(200).json(results.rows);
   });
 };
@@ -31,7 +31,7 @@ const getProblemsByDifficulty = (request, response) => {
             GROUP BY "User-Problem".problem_id) AS submission ON "Problem".problem_id = submission.problem_id \
             WHERE "Problem".active = True';
     pool.query(query, [userID], (error, results) => {
-      if (error) return response.send(error);
+      if (error) return response.status(400).send(error);
       response.status(200).json(results.rows);
     });
   } else {
@@ -43,7 +43,7 @@ const getProblemsByDifficulty = (request, response) => {
             GROUP BY "User-Problem".problem_id) AS submission ON "Problem".problem_id = submission.problem_id \
             WHERE "Problem".difficulty = $2 AND "Problem".active = True';
     pool.query(query, [userID, difficulty], (error, results) => {
-      if (error) return response.send(error);
+      if (error) return response.status(400).send(error);
       response.status(200).json(results.rows);
     });
   }
@@ -78,9 +78,6 @@ const getProblemById = async (request, response) => {
 };
 
 /**
-<<<<<<< HEAD
- * Obtener la info principal de un
-=======
  * Obtener toda la info de un problema
  * y los submissions de un usuario al mismo
  * @param {JSON} request HTTP request
@@ -139,7 +136,6 @@ const getUserSubmissions = async (client, response, problemId, userId) => {
 
 /**
  * Obtener la info principal de un 
->>>>>>> develop
  * problema por ID
  * @param {Promise} client objeto de postgresql
  * @param {Hanlder} response manejo del response
@@ -153,7 +149,7 @@ const getProblemById2 = async (client, response, id) => {
     const results = await client.query(query, [id]);
     return results.rows[0];
   } catch (error) {
-    return response.send("Error");
+    return response.status(400).send(error);
   }
 };
 
@@ -172,7 +168,7 @@ const getProblemTemplates = async (client, response, id) => {
     const results = await client.query(query, [id]);
     return results.rows;
   } catch (error) {
-    return response.send("Error");
+    return response.status(400).send(error);
   }
 };
 
@@ -191,7 +187,7 @@ const getProblemTestCases = async (client, response, id) => {
     const results = await client.query(query, [id]);
     return results.rows;
   } catch (error) {
-    return response.send("Error");
+    return response.status(400).send(error);
   }
 };
 
@@ -268,7 +264,7 @@ const createNewTemplate = async (client, response, template, problemID) => {
     ]);
     return results.rows[0].temp_id;
   } catch (error) {
-    response.send("Error");
+    response.status(400).send(error);
   }
 };
 
@@ -294,7 +290,7 @@ const createNewTestCase = async (client, response, testCase, problemID) => {
     ]);
     return results.rows[0].test_id;
   } catch (error) {
-    response.send("Error");
+    response.status(400).send(error);
   }
 };
 
@@ -326,7 +322,7 @@ const updateProblemById = async (request, response) => {
 };
 
 /**
- * actualizar el problema propuesto en la tabla problemas
+ * Actualizar el problema propuesto en la tabla problemas
  * @param {Promise} client objeto de postgresql
  * @param {Handler} response manejo del response
  * @param {JSON} data objeto con información del problema
@@ -347,7 +343,7 @@ const updateProblem = async (client, response, data) => {
       data.problem_id,
     ]);
   } catch (error) {
-    return response.send("Error");
+    return response.status(400).send(error);
   }
 };
 
@@ -365,15 +361,16 @@ const updateTemplate = async (client, response, template, problemID) => {
   try {
     await client.query(query, [template.code, template.language, problemID]);
   } catch (error) {
-    response.send("Error");
+    response.status(400).send(error);
   }
 };
 
 /**
- *
+ * Eliminar todos los test cases de un 
+ * problema
  * @param {Promise} client objeto de postgresql
  * @param {Handler} response manejo del response
- * @param {Number} problemID
+ * @param {Number} problemID id del problema
  *
  */
 const deleteTestCases = async (client, response, problemID) => {
@@ -382,7 +379,7 @@ const deleteTestCases = async (client, response, problemID) => {
   try {
     await client.query(query, [problemID]);
   } catch (error) {
-    return response.send("Error");
+    return response.status(400).send(error);
   }
 };
 

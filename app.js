@@ -23,25 +23,32 @@ app.post("/login", login.loginUser);
 
 // ENDPOINT: PROBLEMS
 
-app.route("/problems").get(problems.getAllProblems).post(problems.postProblem);
+app.route("/problems")
+    .get(problems.getAllProblems)
+    .post(problems.postProblem);
 
-app.route("/problems/:difficulty").get(problems.getProblemsByDifficulty);
+app.route("/problems/:difficulty")
+    .get(problems.getProblemsByDifficulty);
 
 app
   .route("/problems/id/:id")
   .get(problems.getProblemById)
   .put(problems.updateProblemById);
 
-app.route("/ideProblem/").get(problems.getProblemsWithSubmissions);
+app.route("/ideProblem/")
+    .get(problems.getProblemsWithSubmissions);
 
 // ENDPOINT: PAYMENTS
-app.route("/payments").post(payments.createPayment);
+app.route("/payments")
+    .post(payments.createPayment);
 
 // ENDPOINT: STATISTICS
-app.route("/statistics/:userId").get(statistics.getUserStatistics);
+app.route("/statistics/:userId")
+    .get(statistics.getUserStatistics);
 
 // ENDPOINT: USER
-app.route("/user").put(user.editUser);
+app.route("/user")
+    .put(user.editUser);
 
 app.listen(port, () => {
   console.log("Server started on port 3000");
