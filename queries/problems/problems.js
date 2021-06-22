@@ -84,32 +84,53 @@ const getProblemById = async (request, response) => {
  * @param {JSON} response HTTP response
  */
 const getProblemsWithSubmissions = async (request, response) => {
-  const problemId = request.query.problem_id;
-  const userId = request.query.google_id;
-  const client = await pool.connect();
+    const problemId = request.query.problem_id;
+    const userId = request.query.google_id;
+    const client = await pool.connect();
 
-  const problem = await getProblemById2(client, response, problemId);
-  const templates = await getProblemTemplates(client, response, problemId);
-  const submissions = await getUserSubmissions(
-    client,
-    response,
-    problemId,
-    userId
-  );
+    const problem = await getProblemById2(client, response, problemId);
+    const templates = await getProblemTemplates(client, response, problemId);
+    let submissions = await getUserSubmissions(
+        client,
+        response,
+        problemId,
+        userId
+    );
 
-  client.release();
+    client.release();
+    
+    submissions = submissions.map(s => {
+        return {
+            ...s,
+            date: changeDateFormat(s.date)
+        }
+    });
+    
+    const problemInfo = {
+        ...problem,
+        solutionCode: problem.solutioncode,
+        templates,
+        submissions,
+    };
 
-  const problemInfo = {
-    ...problem,
-    solutionCode: problem.solutioncode,
-    templates,
-    submissions,
-  };
+    delete problemInfo.solutioncode;
 
-  delete problemInfo.solutioncode;
-
-  response.status(200).json(problemInfo);
+    response.status(200).json(problemInfo);
 };
+
+/**
+ * Cambiar el formato de una fecha
+ * @param {String} date fecha en formato timestamp
+ * @returns String fecha en formato dd/mm/yyyy
+ */
+const changeDateFormat = (date) => {
+    const temp = new Date(date);
+    const dd = String(temp.getDate()).padStart(2, '0');
+    const mm = String(temp.getMonth() + 1).padStart(2, '0'); //January is 0!
+    const yyyy = temp.getFullYear();
+
+    return dd + "/" + mm + "/" + yyyy;
+}
 
 /**
  * Obtener todas las submissions de un
@@ -122,9 +143,10 @@ const getProblemsWithSubmissions = async (request, response) => {
  */
 const getUserSubmissions = async (client, response, problemId, userId) => {
   const query =
-    "SELECT code, language, solved,\
+    "SELECT id, code, language, solved,\
     CASE WHEN solved = TRUE THEN 'Aprobado' ELSE 'Desaprobado' END as status, date FROM \"User-Problem\" \
-    WHERE problem_id = $1 AND active = TRUE AND user_id = (SELECT user_id FROM \"User\" WHERE google_id = $2)";
+    WHERE problem_id = $1 AND active = TRUE AND user_id = (SELECT user_id FROM \"User\" WHERE google_id = $2)\
+    ORDER BY date DESC";
 
   try {
     const results = await client.query(query, [problemId, userId]);
