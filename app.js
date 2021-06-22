@@ -29,6 +29,8 @@ app.route("/problems/:difficulty").get(problems.getProblemsByDifficulty);
 
 app.route("/problems/id/:id").get(problems.getProblemById);
 
+app.route("/ideProblem/").get(problems.getProblemsWithSubmissions);
+
 // ENDPOINT: PAYMENTS
 app.route("/payments").post(payments.createPayment);
 
