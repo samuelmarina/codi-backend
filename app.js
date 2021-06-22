@@ -50,9 +50,12 @@ app.route("/statistics/:userId")
 app.route("/user")
     .put(user.editUser);
 
-// ENDPOINT: EXECUTE IDE
+// ENDPOINT: IDE
 app.route("/ide/execute")
     .post(ide.tryCode);
+
+app.route("/ide/send")
+    .post(ide.sendCode);
 
 app.listen(port, () => {
   console.log("Server started on port 3000");
