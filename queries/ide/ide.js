@@ -63,6 +63,8 @@ const sendCode = async (request, response) => {
         code: code,
     });
 
+    client.release();
+
     response.status(201).send({
         id: submission.id,
         code: code,
