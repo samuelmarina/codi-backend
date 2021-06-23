@@ -27,6 +27,7 @@ const tryCode = async (request, response) => {
 
     return response.status(200).send({
         status: resultOutput === output,
+        input: input,
         output: resultOutput,
         expectedOutput: output,
     });
