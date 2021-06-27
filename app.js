@@ -14,6 +14,7 @@ const statistics = require("./queries/statistics/statistics");
 const user = require("./queries/user/user");
 const ide = require("./queries/ide/ide");
 const subs = require("./queries/subscriptions/subscriptions");
+const cron = require("node-cron");
 
 app.set("view engine", "ejs");
 
@@ -49,12 +50,9 @@ app.route("/ide/execute").post(ide.tryCode);
 
 app.route("/ide/send").post(ide.sendCode);
 
-//CronJob
-const cron = require("node-cron");
-//daily 0 0 * * * se ejecuta una vez a media noche
-//every single second * * * * * *
+//Chequear subscripciones activas
+//Daily 0 0 * * * se ejecuta una vez a media noche
 cron.schedule("0 0 * * *", () => {
-  console.log("Revision de subscripciones.");
   subs.checkingSubs();
 });
 
