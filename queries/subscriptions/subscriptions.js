@@ -2,7 +2,7 @@ const pool = require("../../bd/pg");
 const user = require("../user/user");
 
 const disableSubscription = (subscription) => {
-  const query = 'UPDATE "Subscription" SET active = TRUE WHERE sub_id = $1';
+  const query = 'UPDATE "Subscription" SET active = FALSE WHERE sub_id = $1';
   pool.query(query, [subscription.sub_id], (err, res) => {
     if (err) {
       console.log("Error");
@@ -17,7 +17,7 @@ const checkingSubs = () => {
   const tiempoTranscurrido = Date.now();
   const today = new Date(tiempoTranscurrido);
   //Getting active subscriptions
-  const query = 'SELECT * FROM "Subscription" WHERE active = FALSE';
+  const query = 'SELECT * FROM "Subscription" WHERE active = TRUE';
   pool.query(query, (error, results) => {
     results.rows.forEach((sub) => {
       const userSubscriptionDate = new Date(sub.end_date);
