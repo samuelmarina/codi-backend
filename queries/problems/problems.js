@@ -29,7 +29,7 @@ const getProblemsByDifficulty = (request, response) => {
             FROM "Problem" LEFT JOIN (SELECT "User-Problem".problem_id FROM "User-Problem" \
             INNER JOIN "User" ON "User".user_id = "User-Problem".user_id WHERE "User".google_id = $1 AND "User-Problem".solved = True \
             GROUP BY "User-Problem".problem_id) AS submission ON "Problem".problem_id = submission.problem_id \
-            WHERE "Problem".active = True';
+            WHERE "Problem".active = True ORDER BY "Problem".problem_id ASC';
     pool.query(query, [userID], (error, results) => {
       if (error) return response.status(400).send(error);
       response.status(200).json(results.rows);
@@ -41,7 +41,7 @@ const getProblemsByDifficulty = (request, response) => {
             FROM "Problem" LEFT JOIN (SELECT "User-Problem".problem_id FROM "User-Problem" \
             INNER JOIN "User" ON "User".user_id = "User-Problem".user_id WHERE "User".google_id = $1 AND "User-Problem".solved = True \
             GROUP BY "User-Problem".problem_id) AS submission ON "Problem".problem_id = submission.problem_id \
-            WHERE "Problem".difficulty = $2 AND "Problem".active = True';
+            WHERE "Problem".difficulty = $2 AND "Problem".active = True ORDER BY "Problem".problem_id ASC';
     pool.query(query, [userID, difficulty], (error, results) => {
       if (error) return response.status(400).send(error);
       response.status(200).json(results.rows);
@@ -84,38 +84,38 @@ const getProblemById = async (request, response) => {
  * @param {JSON} response HTTP response
  */
 const getProblemsWithSubmissions = async (request, response) => {
-    const problemId = request.query.problem_id;
-    const userId = request.query.google_id;
-    const client = await pool.connect();
+  const problemId = request.query.problem_id;
+  const userId = request.query.google_id;
+  const client = await pool.connect();
 
-    const problem = await getProblemById2(client, response, problemId);
-    const templates = await getProblemTemplates(client, response, problemId);
-    let submissions = await getUserSubmissions(
-        client,
-        response,
-        problemId,
-        userId
-    );
+  const problem = await getProblemById2(client, response, problemId);
+  const templates = await getProblemTemplates(client, response, problemId);
+  let submissions = await getUserSubmissions(
+    client,
+    response,
+    problemId,
+    userId
+  );
 
-    client.release();
-    
-    submissions = submissions.map(s => {
-        return {
-            ...s,
-            date: changeDateFormat(s.date)
-        }
-    });
-    
-    const problemInfo = {
-        ...problem,
-        solutionCode: problem.solutioncode,
-        templates,
-        submissions,
+  client.release();
+
+  submissions = submissions.map((s) => {
+    return {
+      ...s,
+      date: changeDateFormat(s.date),
     };
+  });
 
-    delete problemInfo.solutioncode;
+  const problemInfo = {
+    ...problem,
+    solutionCode: problem.solutioncode,
+    templates,
+    submissions,
+  };
 
-    response.status(200).json(problemInfo);
+  delete problemInfo.solutioncode;
+
+  response.status(200).json(problemInfo);
 };
 
 /**
@@ -124,13 +124,13 @@ const getProblemsWithSubmissions = async (request, response) => {
  * @returns String fecha en formato dd/mm/yyyy
  */
 const changeDateFormat = (date) => {
-    const temp = new Date(date);
-    const dd = String(temp.getDate()).padStart(2, '0');
-    const mm = String(temp.getMonth() + 1).padStart(2, '0'); //January is 0!
-    const yyyy = temp.getFullYear();
+  const temp = new Date(date);
+  const dd = String(temp.getDate()).padStart(2, "0");
+  const mm = String(temp.getMonth() + 1).padStart(2, "0"); //January is 0!
+  const yyyy = temp.getFullYear();
 
-    return dd + "/" + mm + "/" + yyyy;
-}
+  return dd + "/" + mm + "/" + yyyy;
+};
 
 /**
  * Obtener todas las submissions de un
@@ -157,7 +157,7 @@ const getUserSubmissions = async (client, response, problemId, userId) => {
 };
 
 /**
- * Obtener la info principal de un 
+ * Obtener la info principal de un
  * problema por ID
  * @param {Promise} client objeto de postgresql
  * @param {Hanlder} response manejo del response
@@ -388,7 +388,7 @@ const updateTemplate = async (client, response, template, problemID) => {
 };
 
 /**
- * Eliminar todos los test cases de un 
+ * Eliminar todos los test cases de un
  * problema
  * @param {Promise} client objeto de postgresql
  * @param {Handler} response manejo del response
