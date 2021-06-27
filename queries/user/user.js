@@ -21,7 +21,7 @@ const editUser = (request, response) => {
  * @param {Number} id user_id
  */
 const disablePremiumUser = (id) => {
-  const query = 'UPDATE "User" SET premium = TRUE WHERE user_id = $1';
+  const query = 'UPDATE "User" SET premium = FALSE WHERE user_id = $1';
   pool.query(query, [id], (err, res) => {
     if (err) {
       console.log("Error");
