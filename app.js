@@ -13,6 +13,7 @@ const payments = require("./queries/payments/payments.js");
 const statistics = require("./queries/statistics/statistics");
 const user = require("./queries/user/user");
 const ide = require("./queries/ide/ide");
+const subs = require("./queries/subscriptions/subscriptions");
 
 app.set("view engine", "ejs");
 
@@ -23,39 +24,39 @@ app.use(express.static("public"));
 app.post("/login", login.loginUser);
 
 // ENDPOINT: PROBLEMS
-app.route("/problems")
-    .get(problems.getAllProblems)
-    .post(problems.postProblem);
+app.route("/problems").get(problems.getAllProblems).post(problems.postProblem);
 
-app.route("/problems/:difficulty")
-    .get(problems.getProblemsByDifficulty);
+app.route("/problems/:difficulty").get(problems.getProblemsByDifficulty);
 
 app
   .route("/problems/id/:id")
   .get(problems.getProblemById)
   .put(problems.updateProblemById);
 
-app.route("/ideProblem/")
-    .get(problems.getProblemsWithSubmissions);
+app.route("/ideProblem/").get(problems.getProblemsWithSubmissions);
 
 // ENDPOINT: PAYMENTS
-app.route("/payments")
-    .post(payments.createPayment);
+app.route("/payments").post(payments.createPayment);
 
 // ENDPOINT: STATISTICS
-app.route("/statistics/:userId")
-    .get(statistics.getUserStatistics);
+app.route("/statistics/:userId").get(statistics.getUserStatistics);
 
 // ENDPOINT: USER
-app.route("/user")
-    .put(user.editUser);
+app.route("/user").put(user.editUser);
 
 // ENDPOINT: IDE
-app.route("/ide/execute")
-    .post(ide.tryCode);
+app.route("/ide/execute").post(ide.tryCode);
 
-app.route("/ide/send")
-    .post(ide.sendCode);
+app.route("/ide/send").post(ide.sendCode);
+
+//CronJob
+const cron = require("node-cron");
+//daily 0 0 * * * se ejecuta una vez a media noche
+//every single second * * * * * *
+cron.schedule("0 0 * * *", () => {
+  console.log("Revision de subscripciones.");
+  subs.checkingSubs();
+});
 
 app.listen(port, () => {
   console.log("Server started on port 3000");
