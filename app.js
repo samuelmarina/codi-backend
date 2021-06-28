@@ -52,8 +52,9 @@ app.route("/ide/send").post(ide.sendCode);
 
 //Chequear subscripciones activas
 //Daily 0 0 * * * se ejecuta una vez a media noche
-cron.schedule("0 0 * * *", () => {
-  subs.checkingSubs();
+cron.schedule("45 23 * * *", () => {
+    subs.checkingSubs();
+    console.log("Lmao")
 });
 
 app.listen(port, () => {
