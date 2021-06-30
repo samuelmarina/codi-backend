@@ -19,7 +19,7 @@ const createPayment = async (request, response) => {
     client.release();
     return response.status(201).send(results.rows);
   } catch (error) {
-    console.log(error);
+    client.release();
     return response.status(400).send(error);
   }
 };
