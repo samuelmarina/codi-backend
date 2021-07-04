@@ -39,9 +39,52 @@ const getUserStatistics = async (request, response) => {
     const monthlySubmissions = await getSubmissionsPerMonth(client, response, userId);
     data['monthlySubmissions'] = monthlySubmissions;
 
+    const endDate = await getSubscriptionEndDate(client, response, userId);
+    if (endDate) {
+        data['daysLeft'] = getDaysLeft(endDate.end_date);
+    }
+    else {
+        data['daysLeft'] = -1;
+    }
+
     client.release()
     
     response.status(200).send(data);
+}
+
+/**
+ * Obtener la cantidad de días que le 
+ * queda un usuario de suscripción
+ * @param {String} endDate fecha de corte
+ * @returns cantidad de días
+ */
+const getDaysLeft = (endDate) => {
+    const end = new Date(endDate);
+    const today = new Date();
+
+    const oneDay = 1000 * 60 * 60 * 24;
+
+    return Math.round((end-today)/oneDay)
+}
+
+/**
+ * Obtener la fecha de vencida de la 
+ * suscripción de un usuario
+ * @param {Promise} client objeto de postgresql
+ * @param {Hanlder} response manejo del response 
+ * @param {String} userID ID del usuario
+ * @returns Arreglo con fecha de vencida
+ */
+const getSubscriptionEndDate = async (client, response, userID) => {
+    const query = 'SELECT end_date FROM "Subscription" WHERE user_id = (SELECT user_id FROM "User" WHERE google_id = $1) \
+    AND active = TRUE ORDER BY end_date DESC LIMIT 1';
+
+    try {
+        const results = await client.query(query, [userID]);
+        return results.rows[0];
+    } catch (error) {
+        return response.status(400).send(error);
+    }
 }
 
 /**
